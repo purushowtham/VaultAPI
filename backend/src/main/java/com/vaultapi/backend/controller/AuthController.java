@@ -4,9 +4,17 @@ import com.vaultapi.backend.dto.request.LoginRequest;
 import com.vaultapi.backend.dto.request.RegisterRequest;
 import com.vaultapi.backend.dto.response.ApiResponse;
 import com.vaultapi.backend.dto.response.AuthResponse;
+import com.vaultapi.backend.dto.response.UserResponse;
 import com.vaultapi.backend.service.AuthService;
+import com.vaultapi.backend.util.ResponseUtil;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,30 +24,70 @@ public class AuthController {
 
     private final AuthService authService;
 
+    /**
+     * Register User
+     */
     @PostMapping("/register")
     public ApiResponse<AuthResponse> register(
+            @Valid
+            @RequestBody
+            RegisterRequest request
+    ) {
+
+        return ResponseUtil.success(
+
+                "Registration successful",
+
+                authService.register(request)
+
+        );
+
+    }
+
+    /**
+     * Login User
+     */
+    @PostMapping("/login")
+    public ApiResponse<AuthResponse> login(
 
             @Valid
 
             @RequestBody
 
-            RegisterRequest request
+            LoginRequest request
 
     ) {
 
-        AuthResponse response =
+        return ResponseUtil.success(
 
-                authService.register(request);
+                "Login successful",
 
-        return ApiResponse.<AuthResponse>builder()
+                authService.login(request)
 
-                .success(true)
+        );
 
-                .message("Registration successful")
+    }
 
-                .data(response)
+    
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/me")
+    public ApiResponse<UserResponse> currentUser(
 
-                .build();
+            Authentication authentication
+
+    ) {
+
+        return ResponseUtil.success(
+
+                "Current user",
+
+                authService.getCurrentUser(
+
+                        authentication.getName()
+
+                )
+
+        );
 
     }
 
